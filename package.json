@@ -1,0 +1,76 @@
+{
+  "name": "react-native-pageindex",
+  "version": "0.1.0",
+  "description": "Vectorless, reasoning-based RAG — builds a hierarchical tree index from PDF, DOCX, CSV, XLSX or Markdown using any LLM. React Native compatible.",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "react-native",
+    "rag",
+    "pdf",
+    "docx",
+    "csv",
+    "xlsx",
+    "llm",
+    "page-index",
+    "document-analysis",
+    "tree-index",
+    "inverted-index",
+    "reverse-index",
+    "retrieval-augmented-generation",
+    "knowledge-base"
+  ],
+  "author": {
+    "name": "subham11",
+    "url": "https://github.com/subham11"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/subham11/react-native-pageindex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/subham11/react-native-pageindex/issues"
+  },
+  "homepage": "https://github.com/subham11/react-native-pageindex#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.70.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "pdfjs-dist": ">=4.0.0",
+    "mammoth": ">=1.6.0",
+    "xlsx": ">=0.18.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

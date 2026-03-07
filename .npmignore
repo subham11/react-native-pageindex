@@ -1,0 +1,14 @@
+# Source — not needed by consumers (dist/ is shipped instead)
+src/
+tsconfig.json
+
+# Dev tooling
+.github/
+*.log
+*.tgz
+
+# Never ship secrets
+.env
+.env.*
+*.pem
+*.key
