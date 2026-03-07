@@ -174,33 +174,31 @@ export async function pageIndexDocument(
     });
   }
 
-  // ── Extract pages from binary formats ───────────────────────────────────────
+  // ── Extract pages from each format ──────────────────────────────────────────
 
   let pages: PageData[];
 
-  const bytes = data instanceof ArrayBuffer || data instanceof Uint8Array
-    ? data
-    : null;
-
-  if (!bytes) {
+  // Helper — enforces binary input for formats that require it (PDF/DOCX/XLSX)
+  const requireBytes = (fmt: string): ArrayBuffer | Uint8Array => {
+    if (data instanceof ArrayBuffer || data instanceof Uint8Array) return data;
     throw new Error(
-      `[PageIndex] File type "${fileType}" requires binary data. Pass \`data\` as ArrayBuffer or Uint8Array.`,
+      `[PageIndex] File type "${fmt}" requires binary data. Pass \`data\` as ArrayBuffer or Uint8Array.`,
     );
-  }
+  };
 
   onProgress?.({ step: 'Parsing document', percent: 0, detail: fileType.toUpperCase() });
 
   switch (fileType) {
     case 'pdf':
-      pages = await extractPdfPages(bytes, tokenCounter);
+      pages = await extractPdfPages(requireBytes('pdf'), tokenCounter);
       break;
 
     case 'docx':
-      pages = await extractDocxPages(bytes, tokenCounter);
+      pages = await extractDocxPages(requireBytes('docx'), tokenCounter);
       break;
 
     case 'csv': {
-      // CSV can be passed as raw bytes or as a string
+      // CSV accepts either a plain string (text / data) or raw bytes
       const csvData = text ?? data;
       if (csvData == null) {
         throw new Error('[PageIndex] CSV input requires `data` or `text`.');
@@ -210,7 +208,7 @@ export async function pageIndexDocument(
     }
 
     case 'xlsx':
-      pages = await extractXlsxPages(bytes, xlsxOptions, tokenCounter);
+      pages = await extractXlsxPages(requireBytes('xlsx'), xlsxOptions, tokenCounter);
       break;
 
     default: {
