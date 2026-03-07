@@ -2,10 +2,13 @@
  * Browser-specific file extractors for the demo app.
  *
  * These live in demo/ rather than the main package because they use
- * browser-only APIs (DOMParser, window) and the CDN worker trick for pdfjs.
+ * browser-only APIs (DOMParser, window) and Vite's ?url import for the
+ * pdfjs worker (served from local node_modules, no CDN required).
  */
 
 import type { PageData, TokenCounter } from 'react-native-pageindex';
+// Vite resolves this at build time → a local URL served by the dev server / dist
+import pdfjsWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 // ─── Default token counter ────────────────────────────────────────────────────
 const defaultTokens: TokenCounter = (t) => Math.ceil((t ?? '').length / 4);
@@ -23,10 +26,8 @@ export async function extractPdfPagesFromBuffer(
   // Dynamic import — pdfjs-dist is installed in demo/node_modules
   const pdfjsLib = await import('pdfjs-dist');
 
-  // Point the worker at the CDN to avoid bundler worker config headaches
-  const workerVersion = (pdfjsLib as any).version ?? '5.5.207';
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${workerVersion}/pdf.worker.min.mjs`;
+  // Use the local worker served by Vite (from node_modules, no CDN needed)
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
 
   const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) });
   const pdf = await loadingTask.promise;
