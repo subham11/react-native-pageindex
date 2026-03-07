@@ -392,6 +392,20 @@ export default function App() {
               <div className="error-icon">⚠️</div>
               <h3>Build failed</h3>
               <pre className="error-message">{error}</pre>
+              {/* Contextual hints for common errors */}
+              {error?.includes('Failed to fetch') && (
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 420, margin: '0 auto 16px', lineHeight: 1.6 }}>
+                  <strong>Network error:</strong> Make sure the dev server is running
+                  (<code>npm run dev</code>) so the OpenAI proxy is active.
+                  Alternatively, switch to <strong>Anthropic</strong> (supports direct
+                  browser calls) or <strong>Ollama</strong> (local).
+                </p>
+              )}
+              {(error?.includes('401') || error?.includes('403') || error?.includes('Invalid')) && (
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 420, margin: '0 auto 16px', lineHeight: 1.6 }}>
+                  <strong>Auth error:</strong> Double-check your API key in the sidebar.
+                </p>
+              )}
               <button className="btn btn-outline" onClick={() => setBuildState('idle')}>
                 ← Back
               </button>

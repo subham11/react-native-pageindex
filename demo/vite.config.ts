@@ -61,4 +61,21 @@ export default defineConfig({
       external: OPTIONAL_DEPS,
     },
   },
+  /**
+   * Dev-server proxy — OpenAI blocks direct browser requests (no CORS headers).
+   * Routing through the Vite dev server makes the request server-to-server,
+   * which bypasses CORS entirely.
+   *
+   * /llm-proxy/openai  → https://api.openai.com
+   * /llm-proxy/ollama  → http://localhost:11434  (overridden per-request via header)
+   */
+  server: {
+    proxy: {
+      '/llm-proxy/openai': {
+        target: 'https://api.openai.com',
+        changeOrigin: true,
+        rewrite: (p) => p.replace(/^\/llm-proxy\/openai/, ''),
+      },
+    },
+  },
 });

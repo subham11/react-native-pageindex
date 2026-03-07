@@ -31,9 +31,19 @@ export function createLLMProvider(cfg: LLMConfig): LLMProvider {
 }
 
 // ─── OpenAI ──────────────────────────────────────────────────────────────────
+//
+// OpenAI does NOT send CORS headers, so direct browser → api.openai.com calls
+// fail with "Failed to fetch".  In dev we route through the Vite proxy at
+// /llm-proxy/openai → https://api.openai.com (server-to-server, no CORS).
+//
+// import.meta.env.DEV is replaced with `true` in dev and `false` in prod builds.
+const OPENAI_BASE = import.meta.env.DEV
+  ? '/llm-proxy/openai'          // Vite dev-server proxy (no CORS)
+  : 'https://api.openai.com';    // Direct call (needs a backend proxy in prod)
+
 function makeOpenAI(apiKey: string, model: string): LLMProvider {
   return async (prompt, opts) => {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(`${OPENAI_BASE}/v1/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,12 +63,20 @@ function makeOpenAI(apiKey: string, model: string): LLMProvider {
       const err = await res.json().catch(() => ({})) as { error?: { message?: string } };
       throw new Error(`OpenAI ${res.status}: ${err?.error?.message ?? res.statusText}`);
     }
-    const data = await res.json() as { choices: { message: { content: string }; finish_reason: string }[] };
-    return { content: data.choices[0].message.content ?? '', finishReason: data.choices[0].finish_reason };
+    const data = await res.json() as {
+      choices: { message: { content: string }; finish_reason: string }[];
+    };
+    return {
+      content: data.choices[0].message.content ?? '',
+      finishReason: data.choices[0].finish_reason,
+    };
   };
 }
 
 // ─── Anthropic ───────────────────────────────────────────────────────────────
+//
+// Anthropic supports direct browser calls via the
+// `anthropic-dangerous-direct-browser-access: true` header — no proxy needed.
 function makeAnthropic(apiKey: string, model: string): LLMProvider {
   return async (prompt, opts) => {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -82,7 +100,10 @@ function makeAnthropic(apiKey: string, model: string): LLMProvider {
       const err = await res.json().catch(() => ({})) as { error?: { message?: string } };
       throw new Error(`Anthropic ${res.status}: ${err?.error?.message ?? res.statusText}`);
     }
-    const data = await res.json() as { content: { type: string; text?: string }[]; stop_reason: string };
+    const data = await res.json() as {
+      content: { type: string; text?: string }[];
+      stop_reason: string;
+    };
     return {
       content: data.content.find(b => b.type === 'text')?.text ?? '',
       finishReason: data.stop_reason ?? 'stop',
@@ -91,6 +112,8 @@ function makeAnthropic(apiKey: string, model: string): LLMProvider {
 }
 
 // ─── Ollama ───────────────────────────────────────────────────────────────────
+//
+// Ollama runs locally so there are no CORS issues when calling it directly.
 function makeOllama(model: string, baseUrl: string): LLMProvider {
   return async (prompt, opts) => {
     const res = await fetch(`${baseUrl}/api/chat`, {
