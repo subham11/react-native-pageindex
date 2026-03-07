@@ -1,0 +1,101 @@
+farmer_id,farmer_name,location_state,soil_type,soil_ph,nitrogen,phosphorus,potassium,rainfall_mm,temperature_c,recommended_crop,harvest_time_days,risk_level,cautions
+1,Farmer 1,Odisha,Alluvial,7.0,58,31,41,127,32,Chilli,199,Medium,Monitor pests
+2,Farmer 2,West Bengal,Sandy,5.8,60,16,31,248,37,Jute,249,Low,Avoid waterlogging
+3,Farmer 3,Bihar,Red Soil,6.3,44,31,43,166,34,Cotton,218,Medium,Monitor pests
+4,Farmer 4,Chhattisgarh,Sandy,7.4,47,28,27,160,37,Sugarcane,155,Medium,Fungal risk
+5,Farmer 5,Odisha,Sandy,7.1,46,29,29,217,35,Maize,84,High,Monitor pests
+6,Farmer 6,AP,Alluvial,6.9,48,15,34,181,37,Paddy,154,Low,Fungal risk
+7,Farmer 7,Karnataka,Black Soil,7.3,56,20,28,133,33,Jute,177,Medium,Nitrogen application needed
+8,Farmer 8,West Bengal,Sandy,7.5,47,15,33,121,26,Millet,136,Low,Check soil moisture weekly
+9,Farmer 9,Odisha,Clay,7.0,54,33,37,227,37,Wheat,145,Medium,Ensure proper irrigation
+10,Farmer 10,Chhattisgarh,Clay,7.2,47,25,30,229,36,Pigeon Pea,271,Low,Ensure proper irrigation
+11,Farmer 11,Haryana,Loamy,6.5,45,32,36,257,33,Pigeon Pea,108,High,Fungal risk
+12,Farmer 12,Maharashtra,Black Soil,7.5,47,32,44,177,28,Wheat,140,Low,Check soil moisture weekly
+13,Farmer 13,UP,Clay,6.3,58,33,26,180,27,Soybean,143,Low,Monitor pests
+14,Farmer 14,Rajasthan,Black Soil,6.2,60,11,41,127,30,Paddy,130,High,Avoid waterlogging
+15,Farmer 15,Karnataka,Clay,6.9,50,19,44,259,33,Jute,96,High,Avoid waterlogging
+16,Farmer 16,West Bengal,Alluvial,5.9,58,10,33,109,32,Paddy,134,Low,Avoid waterlogging
+17,Farmer 17,Gujarat,Loamy,6.1,53,18,29,176,27,Jute,284,Low,Ensure proper irrigation
+18,Farmer 18,AP,Alluvial,7.1,51,16,42,248,29,Wheat,96,Medium,Check soil moisture weekly
+19,Farmer 19,Chhattisgarh,Sandy,7.1,27,23,50,187,37,Chilli,223,Low,Avoid waterlogging
+20,Farmer 20,UP,Alluvial,6.8,59,35,41,255,35,Maize,172,Low,Avoid waterlogging
+21,Farmer 21,Haryana,Loamy,7.5,32,20,40,219,30,Soybean,116,Medium,Avoid waterlogging
+22,Farmer 22,AP,Alluvial,6.4,37,29,30,114,32,Bajra,191,Low,Check soil moisture weekly
+23,Farmer 23,Chhattisgarh,Alluvial,6.8,48,15,25,183,28,Pigeon Pea,79,Low,Fungal risk
+24,Farmer 24,Rajasthan,Clay,6.6,58,35,50,177,34,Maize,230,Low,Monitor pests
+25,Farmer 25,Chhattisgarh,Loamy,6.0,49,27,46,212,32,Wheat,216,Low,Fungal risk
+26,Farmer 26,Rajasthan,Alluvial,6.7,47,26,27,132,27,Cotton,195,High,Fungal risk
+27,Farmer 27,Bihar,Black Soil,7.1,27,22,24,130,37,Bajra,122,Medium,Monitor pests
+28,Farmer 28,Maharashtra,Clay,6.8,37,10,46,154,36,Millet,260,Low,Nitrogen application needed
+29,Farmer 29,UP,Red Soil,6.3,35,19,30,198,38,Paddy,259,Low,Nitrogen application needed
+30,Farmer 30,Gujarat,Laterite,7.4,54,34,27,126,36,Groundnut,283,Low,Ensure proper irrigation
+31,Farmer 31,Odisha,Alluvial,6.7,46,15,35,250,34,Bajra,110,High,Fungal risk
+32,Farmer 32,UP,Clay,7.4,58,23,42,190,34,Wheat,284,Medium,Nitrogen application needed
+33,Farmer 33,Bihar,Red Soil,7.4,35,26,48,177,33,Jute,129,High,Ensure proper irrigation
+34,Farmer 34,Chhattisgarh,Sandy,7.0,54,35,32,119,29,Millet,294,Medium,Check soil moisture weekly
+35,Farmer 35,AP,Black Soil,6.9,26,14,24,159,26,Wheat,214,Medium,Check soil moisture weekly
+36,Farmer 36,Gujarat,Sandy,7.4,50,23,41,226,38,Paddy,175,Low,Nitrogen application needed
+37,Farmer 37,Chhattisgarh,Black Soil,6.5,44,12,31,183,36,Jute,171,Low,Avoid waterlogging
+38,Farmer 38,Odisha,Alluvial,7.0,44,14,39,225,36,Maize,297,Medium,Check soil moisture weekly
+39,Farmer 39,Haryana,Laterite,7.5,43,21,29,257,35,Jute,211,Medium,Ensure proper irrigation
+40,Farmer 40,AP,Sandy,6.7,31,33,22,134,34,Bajra,294,Low,Monitor pests
+41,Farmer 41,Haryana,Alluvial,6.7,45,32,43,110,26,Sugarcane,194,High,Nitrogen application needed
+42,Farmer 42,West Bengal,Loamy,6.6,48,22,20,168,30,Paddy,122,Medium,Check soil moisture weekly
+43,Farmer 43,Odisha,Laterite,6.4,54,15,22,245,38,Soybean,207,High,Check soil moisture weekly
+44,Farmer 44,Gujarat,Laterite,6.1,33,32,32,147,37,Jute,196,Medium,Nitrogen application needed
+45,Farmer 45,Bihar,Loamy,6.4,60,10,48,210,29,Millet,90,High,Ensure proper irrigation
+46,Farmer 46,Chhattisgarh,Red Soil,6.0,55,11,43,216,26,Bajra,285,Medium,Avoid waterlogging
+47,Farmer 47,Haryana,Sandy,6.6,28,10,34,144,27,Cotton,281,Low,Nitrogen application needed
+48,Farmer 48,Rajasthan,Loamy,6.1,38,19,27,240,37,Pigeon Pea,122,Medium,Avoid waterlogging
+49,Farmer 49,Chhattisgarh,Red Soil,6.2,26,27,42,197,34,Bajra,235,Medium,Check soil moisture weekly
+50,Farmer 50,Rajasthan,Sandy,6.0,57,28,36,187,26,Millet,141,Low,Monitor pests
+51,Farmer 51,Haryana,Laterite,7.4,26,10,47,135,30,Chilli,119,Low,Nitrogen application needed
+52,Farmer 52,Gujarat,Sandy,7.1,59,33,50,209,30,Jute,219,Medium,Ensure proper irrigation
+53,Farmer 53,Maharashtra,Black Soil,6.9,43,21,32,206,27,Groundnut,198,Medium,Check soil moisture weekly
+54,Farmer 54,Haryana,Clay,5.8,48,13,38,139,29,Sugarcane,104,Medium,Avoid waterlogging
+55,Farmer 55,Maharashtra,Black Soil,6.8,28,26,42,143,38,Soybean,175,Low,Monitor pests
+56,Farmer 56,UP,Clay,7.2,51,14,24,124,32,Jute,134,Low,Avoid waterlogging
+57,Farmer 57,Odisha,Clay,7.4,56,18,45,220,29,Pigeon Pea,108,High,Ensure proper irrigation
+58,Farmer 58,Chhattisgarh,Black Soil,6.0,47,26,20,196,29,Chilli,260,Low,Avoid waterlogging
+59,Farmer 59,Maharashtra,Laterite,6.4,47,24,38,219,37,Maize,276,Low,Fungal risk
+60,Farmer 60,Karnataka,Clay,6.8,31,29,26,215,36,Jute,80,Medium,Nitrogen application needed
+61,Farmer 61,Gujarat,Laterite,7.0,59,35,46,225,30,Chilli,101,Low,Nitrogen application needed
+62,Farmer 62,Maharashtra,Loamy,7.0,45,35,39,173,35,Sugarcane,125,High,Ensure proper irrigation
+63,Farmer 63,UP,Laterite,6.2,41,28,50,167,38,Maize,120,High,Nitrogen application needed
+64,Farmer 64,Bihar,Loamy,7.1,59,26,36,147,36,Paddy,206,High,Monitor pests
+65,Farmer 65,Maharashtra,Clay,6.6,43,25,44,143,29,Soybean,238,Medium,Nitrogen application needed
+66,Farmer 66,West Bengal,Loamy,5.9,57,35,33,218,35,Pigeon Pea,128,Low,Fungal risk
+67,Farmer 67,Bihar,Alluvial,7.0,29,15,41,123,30,Paddy,291,Medium,Fungal risk
+68,Farmer 68,West Bengal,Loamy,6.3,35,35,49,223,35,Paddy,103,High,Monitor pests
+69,Farmer 69,AP,Black Soil,7.3,40,28,41,228,29,Sugarcane,214,Low,Fungal risk
+70,Farmer 70,West Bengal,Clay,5.9,44,10,44,173,37,Jute,255,Medium,Fungal risk
+71,Farmer 71,Chhattisgarh,Sandy,7.4,51,19,24,183,35,Maize,193,Medium,Ensure proper irrigation
+72,Farmer 72,Odisha,Red Soil,6.5,30,22,23,121,31,Chilli,111,High,Ensure proper irrigation
+73,Farmer 73,Maharashtra,Red Soil,6.2,49,20,30,171,32,Maize,164,Medium,Avoid waterlogging
+74,Farmer 74,Gujarat,Red Soil,6.8,54,30,24,138,27,Maize,180,Low,Nitrogen application needed
+75,Farmer 75,Haryana,Sandy,6.4,35,23,27,139,26,Cotton,148,Low,Fungal risk
+76,Farmer 76,Gujarat,Black Soil,7.1,27,25,29,225,28,Maize,285,Low,Monitor pests
+77,Farmer 77,UP,Loamy,6.3,31,17,31,194,33,Millet,215,Low,Monitor pests
+78,Farmer 78,Chhattisgarh,Clay,6.4,28,31,47,145,37,Sugarcane,193,High,Fungal risk
+79,Farmer 79,West Bengal,Black Soil,5.9,29,15,21,190,32,Soybean,188,Low,Avoid waterlogging
+80,Farmer 80,Rajasthan,Clay,7.2,40,14,49,117,36,Paddy,273,Medium,Monitor pests
+81,Farmer 81,Chhattisgarh,Red Soil,6.9,59,22,45,213,30,Jute,254,Medium,Monitor pests
+82,Farmer 82,Rajasthan,Red Soil,7.2,55,31,47,157,31,Jute,260,Low,Monitor pests
+83,Farmer 83,Odisha,Clay,6.9,31,30,42,247,28,Jute,152,High,Nitrogen application needed
+84,Farmer 84,Gujarat,Alluvial,6.0,50,32,26,112,26,Sugarcane,151,High,Check soil moisture weekly
+85,Farmer 85,Gujarat,Black Soil,6.0,47,17,45,178,38,Cotton,288,Low,Avoid waterlogging
+86,Farmer 86,AP,Laterite,6.4,27,31,34,258,38,Cotton,279,Medium,Avoid waterlogging
+87,Farmer 87,Karnataka,Alluvial,7.1,36,25,27,138,26,Sugarcane,230,Low,Ensure proper irrigation
+88,Farmer 88,Bihar,Black Soil,6.8,52,22,49,115,35,Cotton,97,Low,Avoid waterlogging
+89,Farmer 89,West Bengal,Laterite,6.8,29,10,28,190,26,Jute,97,High,Avoid waterlogging
+90,Farmer 90,Bihar,Clay,6.9,44,34,48,119,29,Jute,300,High,Check soil moisture weekly
+91,Farmer 91,Odisha,Sandy,6.5,28,31,35,140,31,Pigeon Pea,291,Low,Fungal risk
+92,Farmer 92,Maharashtra,Loamy,7.4,27,31,30,204,26,Millet,133,High,Avoid waterlogging
+93,Farmer 93,Gujarat,Sandy,6.0,40,13,37,164,32,Soybean,84,High,Check soil moisture weekly
+94,Farmer 94,Odisha,Laterite,6.4,53,20,35,175,33,Chilli,115,Low,Monitor pests
+95,Farmer 95,Rajasthan,Loamy,6.6,28,19,49,221,29,Pigeon Pea,123,High,Avoid waterlogging
+96,Farmer 96,Karnataka,Laterite,7.1,39,14,29,258,27,Groundnut,91,Medium,Check soil moisture weekly
+97,Farmer 97,Maharashtra,Loamy,7.5,45,18,22,136,35,Jute,165,Medium,Fungal risk
+98,Farmer 98,Maharashtra,Alluvial,6.7,35,11,47,146,35,Soybean,194,Medium,Check soil moisture weekly
+99,Farmer 99,Bihar,Clay,6.0,34,12,50,250,34,Millet,183,High,Avoid waterlogging
+100,Farmer 100,Odisha,Alluvial,6.7,57,17,32,222,35,Paddy,147,High,Ensure proper irrigation
