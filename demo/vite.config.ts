@@ -11,7 +11,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * This plugin intercepts their resolution in BOTH dev and build modes and
  * redirects them to a tiny virtual stub so Vite never tries to bundle them.
  */
-const OPTIONAL_DEPS = ['mammoth', 'xlsx', 'pdfjs-dist', 'pdfjs-dist/legacy/build/pdf'];
+// mammoth and xlsx are not installed in the demo; pdfjs-dist IS installed (used for PDF upload)
+const OPTIONAL_DEPS = ['mammoth', 'xlsx'];
 const VIRTUAL_PREFIX = '\0virtual:optional-stub:';
 
 function optionalDepsStubPlugin(): Plugin {
@@ -56,6 +57,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      // Only exclude deps that are NOT installed in demo/node_modules
       external: OPTIONAL_DEPS,
     },
   },
