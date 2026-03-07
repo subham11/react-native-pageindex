@@ -6,6 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ---
 
+## [0.1.1] — 2026-03-08
+
+### Fixed
+- **`pageIndex.ts`** — LLM errors were silently swallowed by the retry loop and replaced with the generic `"Max retries reached"` message. The real underlying error (e.g., `"OpenAI 401: Incorrect API key"`) is now surfaced in full.
+- **`pageIndex.ts`** — `429` rate-limit errors now parse the provider's `"Please try again in Xs"` hint and wait the correct delay (+ 500 ms buffer) before retrying. Previously all retries waited a flat 1 s regardless of the rate-limit window.
+- **`pageIndex.ts`** — Fatal errors (HTTP 400 / 401 / 403 / 404, "Invalid API key", etc.) now break out of the retry loop immediately instead of wasting 10 × 1 s.
+- **`pageIndexDocument.ts`** — Binary-data guard fired too early, causing `"File type 'csv' requires binary data"` when passing CSV as a plain string. Guard is now inside the individual `pdf` / `docx` / `xlsx` branches only.
+- **`reverseIndex.ts`** — `buildReverseIndex` now correctly traverses the `TreeNode.nodes` field (Python convention) instead of `children`. Previously only 2 terms were indexed when using keyword mode with a flat CSV result.
+
+### Added
+- `examples/pdf-openai.ts` — Runnable example: index a PDF with OpenAI gpt-4o-mini.
+- `examples/markdown-anthropic.ts` — Runnable example: index Markdown with Anthropic Claude Haiku + keyword search.
+- `examples/csv-keyword.ts` — Runnable example: CSV keyword index with no LLM required.
+
+---
+
 ## [0.1.0] — 2026-03-07
 
 ### Added
