@@ -66,22 +66,39 @@ interface ResolvedOpts {
 
 // ─── LLM Wrappers ─────────────────────────────────────────────────────────────
 
+/**
+ * Returns true for errors that will never succeed on retry:
+ * auth failures (401/403), bad requests (400), not found (404).
+ * Rate-limit (429) and server errors (5xx) are retryable.
+ */
+function isFatalLLMError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  // Match patterns like "OpenAI 401:", "Anthropic 403:", "status 400", etc.
+  return /\b(400|401|403|404)\b/.test(msg) ||
+    /invalid api key|unauthorized|forbidden|bad request/i.test(msg);
+}
+
 async function llmCall(
   llm: LLMProvider,
   prompt: string,
   chatHistory?: LLMMessage[],
 ): Promise<string> {
   const MAX_RETRIES = 10;
+  let lastErr: unknown;
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
       const result = await llm(prompt, chatHistory ? { chatHistory } : undefined);
       return result.content;
     } catch (err) {
+      lastErr = err;
       console.warn(`[PageIndex] LLM call failed (attempt ${i + 1}/${MAX_RETRIES}):`, err);
+      // Don't retry auth / bad-request errors — they won't get better
+      if (isFatalLLMError(err)) break;
       if (i < MAX_RETRIES - 1) await sleep(1000);
     }
   }
-  throw new Error('[PageIndex] Max retries reached for LLM call');
+  const detail = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  throw new Error(`[PageIndex] LLM call failed: ${detail}`);
 }
 
 async function llmCallWithFinishReason(
@@ -90,16 +107,20 @@ async function llmCallWithFinishReason(
   chatHistory?: LLMMessage[],
 ): Promise<{ content: string; finishReason: string }> {
   const MAX_RETRIES = 10;
+  let lastErr: unknown;
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
       const result = await llm(prompt, chatHistory ? { chatHistory } : undefined);
       return { content: result.content, finishReason: result.finishReason };
     } catch (err) {
+      lastErr = err;
       console.warn(`[PageIndex] LLM call failed (attempt ${i + 1}/${MAX_RETRIES}):`, err);
+      if (isFatalLLMError(err)) break;
       if (i < MAX_RETRIES - 1) await sleep(1000);
     }
   }
-  throw new Error('[PageIndex] Max retries reached for LLM call');
+  const detail = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  throw new Error(`[PageIndex] LLM call failed: ${detail}`);
 }
 
 function sleep(ms: number): Promise<void> {
