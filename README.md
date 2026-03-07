@@ -9,6 +9,192 @@ No vector database required. Instead of embeddings, the library uses the LLM to 
 
 ---
 
+## Demo
+
+A fully interactive React demo app is included in the [`demo/`](./demo) directory. It runs in the browser and showcases both index modes against two built-in datasets — no backend required.
+
+### Keyword mode — instant, no API key
+
+> CSV dataset (100 farmers · 14 columns) indexed in **0.0 s** using TF-IDF scoring.
+
+![PageIndex Demo – Keyword mode](docs/screenshots/demo-keyword-mode.png)
+
+### LLM mode — semantic tree via any LLM
+
+> 32-page farming PDF with a TOC parsed into **31 nodes** and **250 indexed terms** in ~214 s using `gpt-4o-mini`.
+
+![PageIndex Demo – LLM mode](docs/screenshots/demo-llm-mode.png)
+
+---
+
+### How the demo is built
+
+The demo is a **Vite + React + TypeScript** single-page app that wires `react-native-pageindex` directly in the browser. Below is a walkthrough of every layer.
+
+#### 1. Data sources (`ConfigPanel.tsx`)
+
+Three mutually exclusive source modes are offered:
+
+| Mode | What it loads |
+|---|---|
+| **Sample CSV** | `farmer_dataset.csv` — 100 rows, 14 columns (crop, state, soil type, risk…) |
+| **Sample PDF** | `crop_production_guide.pdf` — 32-page farming guide generated with `pdfkit`, complete with a dot-leader TOC and 7 chapters |
+| **Upload** | Any `.pdf`, `.html`, `.md`, `.csv`, or `.txt` file drag-dropped or file-picked by the user |
+
+#### 2. Index modes (`App.tsx`)
+
+| Mode | Description | API key needed? |
+|---|---|---|
+| **Keyword** | Calls `extractCsvPages` → `buildReverseIndex({ mode: 'keyword' })`. Pure TF-IDF, zero LLM calls. | ❌ No |
+| **Full LLM** | Full pipeline: extract → `pageIndex` / `pageIndexMd` → `buildReverseIndex`. LLM reasons about structure, generates summaries, and builds a semantic tree. | ✅ Yes |
+
+#### 3. The build pipeline (`App.tsx` — `handleBuild`)
+
+```ts
+// ── CSV / Keyword mode ────────────────────────────────────────────────────
+import { extractCsvPages, buildReverseIndex } from 'react-native-pageindex';
+
+const pages = await extractCsvPages(csvText, { rowsPerPage: 10 });
+
+const result = {                            // flat PageIndexResult (no LLM)
+  doc_name: fileName,
+  structure: { children: pages.map((p, i) => ({ title: `Rows ${i*10+1}–${(i+1)*10}`, node_id: `g${i}`, start_index: i, end_index: i })) },
+};
+
+const index = await buildReverseIndex({ result, pages, options: { mode: 'keyword' } });
+
+
+// ── PDF / LLM mode ────────────────────────────────────────────────────────
+import { pageIndex, buildReverseIndex } from 'react-native-pageindex';
+import { extractPdfPagesFromBuffer } from './demoExtractors';   // pdfjs-dist wrapper
+
+const pages = await extractPdfPagesFromBuffer(arrayBuffer);     // uses pdfjs-dist v5
+
+const result = await pageIndex({
+  pages,
+  docName: 'Crop Production Guide',
+  llm,                                       // passed from LLM config panel
+  options: {
+    onProgress: ({ step, percent, detail }) => setProgress({ step, percent, detail }),
+  },
+});
+
+const index = await buildReverseIndex({ result, pages, llm, options: { mode: 'keyword' } });
+
+
+// ── HTML / Markdown / TXT / Upload mode ──────────────────────────────────
+import { pageIndexMd, buildReverseIndex } from 'react-native-pageindex';
+import { htmlToMarkdown } from './demoExtractors';
+
+const markdown = fileType === 'html' ? htmlToMarkdown(rawText) : rawText;
+
+const result = await pageIndexMd({
+  content: markdown,
+  docName: fileName,
+  llm,
+  options: { onProgress: setProgress },
+});
+
+const index = await buildReverseIndex({ result, llm, options: { mode: 'keyword' } });
+```
+
+#### 4. PDF extraction in the browser (`demoExtractors.ts`)
+
+`pdfjs-dist` requires a Web Worker. In a Vite app the worker URL is resolved at build time using the `?url` import suffix:
+
+```ts
+// demoExtractors.ts
+import pdfjsWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+
+export async function extractPdfPagesFromBuffer(
+  buffer: ArrayBuffer,
+): Promise<PageData[]> {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc; // local, not CDN
+
+  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+  const pages: PageData[] = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const pg = await pdf.getPage(i);
+    const content = await pg.getTextContent();
+    const text = content.items.map((item: any) => item.str).join(' ');
+    pages.push({ text, tokenCount: Math.ceil(text.length / 4) });
+  }
+  return pages;
+}
+```
+
+> **Why `?url` and not a CDN link?**
+> Pointing pdfjs at an external CDN URL fails if the CDN is unreachable or CORS-blocked. The `?url` import makes Vite serve the worker file locally from the same dev-server / bundle.
+
+#### 5. LLM provider wiring (`llm.ts`)
+
+The demo supports OpenAI and Anthropic out of the box. It bridges each provider's SDK into the `LLMProvider` interface that `react-native-pageindex` expects:
+
+```ts
+// llm.ts — OpenAI adapter (simplified)
+import type { LLMProvider } from 'react-native-pageindex';
+
+export function makeOpenAIProvider(apiKey: string, model: string): LLMProvider {
+  return async (prompt, opts) => {
+    const res = await fetch(`${OPENAI_BASE}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({
+        model,
+        messages: [...(opts?.chatHistory ?? []), { role: 'user', content: prompt }],
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(`OpenAI ${res.status}: ${data.error?.message}`);
+    return { content: data.choices[0].message.content, finishReason: data.choices[0].finish_reason };
+  };
+}
+```
+
+OpenAI calls in the browser are routed through a **Vite dev-server proxy** (`/llm-proxy/openai → https://api.openai.com`) to avoid CORS errors. Anthropic supports the `anthropic-dangerous-direct-browser-access: true` header so no proxy is needed.
+
+#### 6. Progress tracking (`ProgressDisplay.tsx`)
+
+`pageIndex` and `pageIndexMd` both fire `onProgress` callbacks after every named step. The demo displays a live progress bar and step label:
+
+```ts
+options: {
+  onProgress: ({ step, percent, detail }) => {
+    setProgress({ step, percent, detail }); // drives the progress bar in ProgressDisplay.tsx
+  },
+}
+```
+
+The PDF pipeline emits **13 named steps** (Initializing → Extracting PDF pages → Scanning for TOC → … → Done); the Markdown pipeline emits **8 steps**.
+
+#### 7. Reverse index & search (`SearchPanel.tsx`)
+
+After the index is built, the demo calls `buildReverseIndex` then passes the result to `searchReverseIndex` on every keystroke:
+
+```ts
+import { searchReverseIndex } from 'react-native-pageindex';
+
+const hits = searchReverseIndex(reverseIndex, query, 20);
+// hits[0] = { nodeTitle, nodeId, score, matchedTerm, totalScore, pageRange, ... }
+```
+
+Results are ranked by `totalScore` and each card shows the matched term, score, confidence level (High / Medium / Low), and the page range covered by that tree node.
+
+#### 8. Running the demo locally
+
+```bash
+git clone https://github.com/subham11/react-native-pageindex.git
+cd react-native-pageindex/demo
+npm install
+npm run dev            # → http://localhost:5173
+```
+
+Select **Sample CSV → Keyword** for an instant zero-API-key demo, or select **Sample PDF → Full LLM**, enter an OpenAI or Anthropic key, and click **Build LLM Index** to see the full semantic-tree pipeline in action.
+
+---
+
 ## Features
 
 | Feature | Detail |
