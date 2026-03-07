@@ -74,7 +74,30 @@ export default defineConfig({
       '/llm-proxy/openai': {
         target: 'https://api.openai.com',
         changeOrigin: true,
+        secure: true,
         rewrite: (p) => p.replace(/^\/llm-proxy\/openai/, ''),
+        configure(proxy) {
+          proxy.on('proxyReq', (_proxyReq, req) => {
+            console.log(`[LLM Proxy] → OpenAI  ${req.method} ${req.url}`);
+          });
+          // When the upstream (api.openai.com) is unreachable, http-proxy silently
+          // drops the connection → browser sees "Failed to fetch".
+          // We catch the error here and write a proper 502 JSON response instead
+          // so the OpenAI handler in llm.ts can read `error.message` and surface it.
+          proxy.on('error', (err, _req, res) => {
+            console.error('[LLM Proxy] upstream error:', err.message);
+            if (typeof (res as any).writeHead === 'function') {
+              (res as any).writeHead(502, { 'Content-Type': 'application/json' });
+              (res as any).end(
+                JSON.stringify({
+                  error: {
+                    message: `OpenAI proxy error — cannot reach api.openai.com. ${err.message}`,
+                  },
+                }),
+              );
+            }
+          });
+        },
       },
     },
   },
