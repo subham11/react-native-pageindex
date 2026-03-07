@@ -7,43 +7,40 @@ interface TreeNodeProps {
 }
 
 function TreeNodeItem({ node, depth = 0 }: TreeNodeProps) {
-  const hasChildren = Array.isArray(node.children) && (node.children as TreeNode[]).length > 0;
+  // PageIndexResult uses `nodes` (Python convention) for child nodes
+  const kids = node.nodes ?? [];
+  const hasKids = kids.length > 0;
   const [open, setOpen] = useState(depth < 2);
 
-  const title = (node.title as string | undefined) ?? 'Untitled';
-  const summary = (node.summary as string | undefined) ?? (node.prefix_summary as string | undefined);
-  const nodeId = node.node_id as string | undefined;
-  const startIdx = node.start_index as number | undefined;
-  const endIdx = node.end_index as number | undefined;
-  const children = (node.children as TreeNode[] | undefined) ?? [];
+  const summary = node.summary ?? node.prefix_summary;
 
   return (
     <div className={`tree-node tree-depth-${depth}`}>
       <div
         className="tree-node-header"
-        onClick={() => hasChildren && setOpen(o => !o)}
-        style={{ cursor: hasChildren ? 'pointer' : 'default' }}
+        onClick={() => hasKids && setOpen(o => !o)}
+        style={{ cursor: hasKids ? 'pointer' : 'default' }}
       >
-        {hasChildren ? (
+        {hasKids ? (
           <span className={`tree-chevron ${open ? 'open' : ''}`}>▶</span>
         ) : (
           <span className="tree-chevron-placeholder" />
         )}
 
-        <span className="tree-node-title">{title}</span>
+        <span className="tree-node-title">{node.title ?? 'Untitled'}</span>
 
         <div className="tree-node-meta">
-          {nodeId && (
-            <span className="badge badge-blue">{nodeId}</span>
+          {node.node_id && (
+            <span className="badge badge-blue">{node.node_id}</span>
           )}
-          {startIdx != null && endIdx != null && startIdx !== endIdx && (
+          {node.start_index != null && node.end_index != null && node.start_index !== node.end_index && (
             <span className="badge badge-orange">
-              pages {startIdx}–{endIdx}
+              pages {node.start_index}–{node.end_index}
             </span>
           )}
-          {hasChildren && (
+          {hasKids && (
             <span className="badge badge-green">
-              {children.length} {children.length === 1 ? 'child' : 'children'}
+              {kids.length} {kids.length === 1 ? 'child' : 'children'}
             </span>
           )}
         </div>
@@ -53,11 +50,11 @@ function TreeNodeItem({ node, depth = 0 }: TreeNodeProps) {
         <div className="tree-node-summary">{summary}</div>
       )}
 
-      {open && hasChildren && (
+      {open && hasKids && (
         <div className="tree-node-children">
-          {children.map((child, i) => (
+          {kids.map((child, i) => (
             <TreeNodeItem
-              key={(child.node_id as string | undefined) ?? i}
+              key={child.node_id ?? i}
               node={child}
               depth={depth + 1}
             />
@@ -69,13 +66,16 @@ function TreeNodeItem({ node, depth = 0 }: TreeNodeProps) {
 }
 
 interface Props {
-  structure: TreeNode;
+  // PageIndexResult.structure is TreeNode[]
+  structure: TreeNode[];
 }
 
 export default function TreeView({ structure }: Props) {
   return (
     <div className="tree-root">
-      <TreeNodeItem node={structure} depth={0} />
+      {structure.map((node, i) => (
+        <TreeNodeItem key={node.node_id ?? i} node={node} depth={0} />
+      ))}
     </div>
   );
 }

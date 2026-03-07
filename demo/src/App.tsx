@@ -7,7 +7,6 @@ import {
   type PageData,
   type ReverseIndex,
   type ProgressInfo,
-  type TreeNode,
 } from 'react-native-pageindex';
 import { createLLMProvider, type LLMConfig, DEFAULT_MODELS } from './llm';
 import Header from './components/Header';
@@ -22,23 +21,19 @@ export type ActiveTab = 'tree' | 'search' | 'pages';
 const CSV_URL = '/farmer_dataset.csv';
 const ROWS_PER_PAGE = 10;
 
-/** Build a flat PageIndexResult from pages — used in keyword-only mode */
+/** Build a flat PageIndexResult from pages — used in keyword-only mode.
+ *  PageIndexResult.structure is TreeNode[], so we return the page groups
+ *  as a flat top-level array — no wrapping root node needed. */
 function makeFlatResult(pages: PageData[]): PageIndexResult {
-  const children: TreeNode[] = pages.map((page, i) => ({
-    title: `Farmers ${i * ROWS_PER_PAGE + 1}–${Math.min((i + 1) * ROWS_PER_PAGE, 100)}`,
-    node_id: `group_${i}`,
-    text: page.text,
-    start_index: i,
-    end_index: i,
-  }));
-
   return {
     doc_name: 'Farmer Dataset',
-    structure: {
-      title: 'Farmer Dataset',
-      node_id: 'root',
-      children,
-    },
+    structure: pages.map((page, i) => ({
+      title: `Farmers ${i * ROWS_PER_PAGE + 1}–${Math.min((i + 1) * ROWS_PER_PAGE, 100)}`,
+      node_id: `group_${i}`,
+      text: page.text,
+      start_index: i,
+      end_index: i,
+    })),
   };
 }
 

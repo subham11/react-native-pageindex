@@ -1,4 +1,4 @@
-import type { PageIndexResult, PageData, ReverseIndex } from 'react-native-pageindex';
+import type { PageIndexResult, PageData, ReverseIndex, TreeNode } from 'react-native-pageindex';
 import type { BuildMode, ActiveTab } from '../App';
 import TreeView from './TreeView';
 import SearchPanel from './SearchPanel';
@@ -14,18 +14,22 @@ interface Props {
   durationMs: number;
 }
 
-function countNodes(node: object): number {
-  const n = node as { children?: object[] };
-  if (!n.children) return 1;
-  return 1 + n.children.reduce((s, c) => s + countNodes(c), 0);
+// structure is TreeNode[] — count all nodes recursively
+function countNodes(nodeOrList: TreeNode | TreeNode[]): number {
+  if (Array.isArray(nodeOrList)) {
+    return nodeOrList.reduce((s, n) => s + countNodes(n), 0);
+  }
+  return 1 + (nodeOrList.nodes ?? []).reduce((s, c) => s + countNodes(c), 0);
 }
 
 export default function ResultsPanel({
   result, reverseIndex, pages, mode, activeTab, setActiveTab, durationMs,
 }: Props) {
-  const nodeCount = countNodes(result.structure as object);
+  const nodeCount = countNodes(result.structure);
   const termCount = reverseIndex?.stats.totalTerms ?? 0;
   const sec = (durationMs / 1000).toFixed(1);
+  // PageIndexResult uses doc_description (not description)
+  const docDesc = result.doc_description;
 
   const tabs = [
     { id: 'tree' as ActiveTab,   label: '🌲 Tree View' },
@@ -64,7 +68,7 @@ export default function ResultsPanel({
           </span>
           <span className="stat-pill-label">mode</span>
         </div>
-        {result.description && (
+        {docDesc && (
           <div className="stat-pill">
             <span className="stat-pill-value">✓</span>
             <span className="stat-pill-label">doc description</span>
@@ -73,7 +77,7 @@ export default function ResultsPanel({
       </div>
 
       {/* Document description (LLM mode) */}
-      {result.description && (
+      {docDesc && (
         <div style={{
           padding: '10px 14px', marginBottom: 16,
           background: 'var(--blue-light)', border: '1px solid #bfdbfe',
@@ -81,7 +85,7 @@ export default function ResultsPanel({
           lineHeight: 1.6,
         }}>
           <strong style={{ color: 'var(--blue)' }}>Document description: </strong>
-          {result.description}
+          {docDesc}
         </div>
       )}
 

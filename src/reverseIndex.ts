@@ -16,7 +16,18 @@ import type {
   SearchResult,
   TreeNode,
 } from './types';
-import { getNodes } from './utils/tree';
+/** Recursively collect every node across the full tree structure.
+ *  Accepts both a single root node and a root-level array
+ *  (PageIndexResult.structure is TreeNode[]). */
+function walkAllNodes(nodeOrList: TreeNode | TreeNode[], acc: TreeNode[] = []): TreeNode[] {
+  if (Array.isArray(nodeOrList)) {
+    for (const n of nodeOrList) walkAllNodes(n, acc);
+    return acc;
+  }
+  acc.push(nodeOrList);
+  for (const child of (nodeOrList.nodes ?? [])) walkAllNodes(child, acc);
+  return acc;
+}
 
 // ─── Stopwords ────────────────────────────────────────────────────────────────
 
@@ -155,7 +166,7 @@ export async function buildReverseIndex(input: {
   }
 
   // Flatten tree into leaf + branch nodes (all nodes)
-  const nodes = getNodes(result.structure);
+  const nodes = walkAllNodes(result.structure);
 
   const terms: Record<string, ReverseIndexEntry[]> = {};
 
