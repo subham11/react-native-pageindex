@@ -6,6 +6,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ---
 
+## [0.1.2] — 2026-03-08
+
+### Documentation
+- Added full **Demo** section to README with screenshots and an 8-part walkthrough of the React demo app
+- Covers: data sources, index modes, build pipeline code, PDF extraction with pdfjs-dist + Vite `?url`, LLM provider wiring, progress tracking, reverse-index search, and local setup instructions
+- Added `docs/screenshots/demo-keyword-mode.png` and `docs/screenshots/demo-llm-mode.png`
+
+---
+
 ## [0.1.1] — 2026-03-08
 
 ### Fixed
