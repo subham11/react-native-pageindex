@@ -73,9 +73,24 @@ interface ResolvedOpts {
  */
 function isFatalLLMError(err: unknown): boolean {
   const msg = err instanceof Error ? err.message : String(err);
-  // Match patterns like "OpenAI 401:", "Anthropic 403:", "status 400", etc.
   return /\b(400|401|403|404)\b/.test(msg) ||
     /invalid api key|unauthorized|forbidden|bad request/i.test(msg);
+}
+
+/**
+ * For 429 rate-limit errors, parse the provider's "try again in Xs" hint and
+ * return that delay in ms (+ 500 ms buffer). Falls back to 8 s if unparseable.
+ * Returns null for non-429 errors (use the default 1 s inter-retry delay).
+ */
+function getRateLimitDelayMs(err: unknown): number | null {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (!/\b429\b/.test(msg)) return null;
+  // OpenAI: "Please try again in 1.534s"
+  // Anthropic: "retry_after: 2"
+  const secMatch = msg.match(/try again in ([\d.]+)s/i) ??
+                   msg.match(/retry[_-]?after[:\s]+([\d.]+)/i);
+  const delaySec = secMatch ? parseFloat(secMatch[1]) : 8;
+  return Math.ceil(delaySec * 1000) + 500;   // add 500 ms buffer
 }
 
 async function llmCall(
@@ -91,10 +106,17 @@ async function llmCall(
       return result.content;
     } catch (err) {
       lastErr = err;
-      console.warn(`[PageIndex] LLM call failed (attempt ${i + 1}/${MAX_RETRIES}):`, err);
-      // Don't retry auth / bad-request errors — they won't get better
-      if (isFatalLLMError(err)) break;
-      if (i < MAX_RETRIES - 1) await sleep(1000);
+      if (isFatalLLMError(err)) {
+        console.warn(`[PageIndex] LLM call fatal error (will not retry):`, err);
+        break;
+      }
+      const rlDelay = getRateLimitDelayMs(err);
+      const waitMs  = rlDelay ?? 1000;
+      console.warn(
+        `[PageIndex] LLM call failed (attempt ${i + 1}/${MAX_RETRIES}), ` +
+        `retrying in ${waitMs}ms:`, err,
+      );
+      if (i < MAX_RETRIES - 1) await sleep(waitMs);
     }
   }
   const detail = lastErr instanceof Error ? lastErr.message : String(lastErr);
@@ -114,9 +136,17 @@ async function llmCallWithFinishReason(
       return { content: result.content, finishReason: result.finishReason };
     } catch (err) {
       lastErr = err;
-      console.warn(`[PageIndex] LLM call failed (attempt ${i + 1}/${MAX_RETRIES}):`, err);
-      if (isFatalLLMError(err)) break;
-      if (i < MAX_RETRIES - 1) await sleep(1000);
+      if (isFatalLLMError(err)) {
+        console.warn(`[PageIndex] LLM call fatal error (will not retry):`, err);
+        break;
+      }
+      const rlDelay = getRateLimitDelayMs(err);
+      const waitMs  = rlDelay ?? 1000;
+      console.warn(
+        `[PageIndex] LLM call failed (attempt ${i + 1}/${MAX_RETRIES}), ` +
+        `retrying in ${waitMs}ms:`, err,
+      );
+      if (i < MAX_RETRIES - 1) await sleep(waitMs);
     }
   }
   const detail = lastErr instanceof Error ? lastErr.message : String(lastErr);

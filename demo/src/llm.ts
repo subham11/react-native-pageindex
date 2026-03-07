@@ -10,8 +10,8 @@ export interface LLMConfig {
 }
 
 export const DEFAULT_MODELS: Record<ProviderType, string> = {
-  openai: 'gpt-4o',
-  anthropic: 'claude-opus-4-5',
+  openai: 'gpt-4o-mini',   // higher TPM limit than gpt-4o — better for demos
+  anthropic: 'claude-3-5-haiku-20241022',
   ollama: 'llama3',
 };
 

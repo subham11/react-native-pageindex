@@ -394,15 +394,25 @@ export default function App() {
               <pre className="error-message">{error}</pre>
               {/* Contextual hints for common errors */}
               {error?.includes('Failed to fetch') && (
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 420, margin: '0 auto 16px', lineHeight: 1.6 }}>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 440, margin: '0 auto 16px', lineHeight: 1.6 }}>
                   <strong>Network error:</strong> Make sure the dev server is running
                   (<code>npm run dev</code>) so the OpenAI proxy is active.
-                  Alternatively, switch to <strong>Anthropic</strong> (supports direct
-                  browser calls) or <strong>Ollama</strong> (local).
+                  Alternatively switch to <strong>Anthropic</strong> (direct browser calls)
+                  or <strong>Ollama</strong> (local).
                 </p>
               )}
-              {(error?.includes('401') || error?.includes('403') || error?.includes('Invalid')) && (
-                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 420, margin: '0 auto 16px', lineHeight: 1.6 }}>
+              {error?.includes('429') && (
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 440, margin: '0 auto 16px', lineHeight: 1.6 }}>
+                  <strong>Rate limit (TPM):</strong> Your OpenAI tier has a low token-per-minute cap.
+                  The retry logic will wait the required time and try again automatically —
+                  just click <strong>Build</strong> again.
+                  For fewer rate-limit hits, switch to{' '}
+                  <strong>gpt-4o-mini</strong> (10× higher TPM) or{' '}
+                  <strong>Anthropic claude-3-5-haiku</strong>.
+                </p>
+              )}
+              {(error?.includes('401') || error?.includes('403') || error?.includes('Incorrect API key') || error?.includes('Invalid')) && (
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', maxWidth: 440, margin: '0 auto 16px', lineHeight: 1.6 }}>
                   <strong>Auth error:</strong> Double-check your API key in the sidebar.
                 </p>
               )}
