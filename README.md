@@ -25,6 +25,12 @@ A fully interactive React demo app is included in the [`demo/`](./demo) director
 
 ![PageIndex Demo – LLM mode](docs/screenshots/demo-llm-mode.png)
 
+### Chat mode — conversational AI over any indexed document
+
+> Ask natural-language questions and get cited answers backed by the reverse index. Multi-turn conversation with collapsible source references per reply.
+
+![PageIndex Demo – Chat mode](docs/screenshots/demo-chat-mode.png)
+
 ---
 
 ### How the demo is built
@@ -182,7 +188,74 @@ const hits = searchReverseIndex(reverseIndex, query, 20);
 
 Results are ranked by `totalScore` and each card shows the matched term, score, confidence level (High / Medium / Low), and the page range covered by that tree node.
 
-#### 8. Running the demo locally
+#### 8. Chat mode (`ChatPanel.tsx`)
+
+After the index is built a **💬 Chat** tab appears alongside Tree View, Search and Raw Pages. It implements a full multi-turn conversational loop over the indexed document:
+
+1. **Retrieve** — `searchReverseIndex(reverseIndex, question, 5)` fetches the top-5 relevant tree nodes.
+2. **Build context** — actual page text (or node summaries as fallback) from those nodes is injected into the prompt, capped to 1 200 chars per node.
+3. **Chat history** — the last 10 conversation turns are passed as `chatHistory` for multi-turn continuity.
+4. **Stream answer** — the configured `LLMProvider` returns the answer, which is displayed with collapsible **citations** (node title, node ID, page range, relevance score).
+
+```ts
+import { searchReverseIndex } from 'react-native-pageindex';
+import type { LLMProvider, ReverseIndex, PageIndexResult, PageData } from 'react-native-pageindex';
+
+async function chat(
+  question: string,
+  reverseIndex: ReverseIndex,
+  result: PageIndexResult,
+  pages: PageData[],
+  llm: LLMProvider,
+  chatHistory: { role: 'user' | 'assistant'; content: string }[] = [],
+) {
+  // 1. Retrieve relevant nodes
+  const hits = searchReverseIndex(reverseIndex, question, 5);
+
+  // 2. Build grounded context from page text / node summaries
+  const contextParts = hits.map(hit => {
+    const pageRange = `${hit.startIndex ?? '?'}–${hit.endIndex ?? '?'}`;
+    const body = pages
+      .slice((hit.startIndex ?? 1) - 1, hit.endIndex ?? 1)
+      .map(p => p.text)
+      .join('\n')
+      .slice(0, 1200);
+    return `[${hit.nodeTitle} | pages ${pageRange}]\n${body || hit.summary}`;
+  });
+
+  const systemPrompt =
+    `You are a helpful assistant for "${result.doc_name}". ` +
+    `Use the provided sections as your primary source. ` +
+    `Always cite which section your answer comes from.`;
+
+  const userTurn =
+    `Relevant sections:\n\n${contextParts.join('\n\n---\n\n')}` +
+    `\n\nQuestion: ${question}`;
+
+  // 3. Call LLM with chat history
+  const response = await llm(userTurn, {
+    chatHistory: [
+      { role: 'system' as any, content: systemPrompt },
+      ...chatHistory,
+    ],
+  });
+
+  // 4. Return answer + citation metadata
+  return {
+    answer: response.content,
+    citations: hits.map(h => ({
+      title: h.nodeTitle,
+      nodeId: h.nodeId,
+      pages: `${h.startIndex}–${h.endIndex}`,
+      score: Math.round(h.totalScore * 100),
+    })),
+  };
+}
+```
+
+> **Chat requires an LLM provider.** In **Keyword mode** the Chat tab is visible but the `llm` ref is `null` — configure an API key in the sidebar and switch to **Full LLM** mode before building the index to enable chat.
+
+#### 9. Running the demo locally
 
 ```bash
 git clone https://github.com/subham11/react-native-pageindex.git
@@ -191,7 +264,7 @@ npm install
 npm run dev            # → http://localhost:5173
 ```
 
-Select **Sample CSV → Keyword** for an instant zero-API-key demo, or select **Sample PDF → Full LLM**, enter an OpenAI or Anthropic key, and click **Build LLM Index** to see the full semantic-tree pipeline in action.
+Select **Sample CSV → Keyword** for an instant zero-API-key demo, or select **Sample PDF → Full LLM**, enter an OpenAI or Anthropic key, and click **Build LLM Index** to see the full semantic-tree pipeline in action. Once the index is built, switch to the **💬 Chat** tab to start a conversation with the document.
 
 ---
 
@@ -202,6 +275,7 @@ Select **Sample CSV → Keyword** for an instant zero-API-key demo, or select **
 | **Multi-format** | PDF, Word (.docx), CSV, Spreadsheet (.xlsx/.xls), Markdown |
 | **Forward index** | Hierarchical tree: chapters → sections → subsections |
 | **Reverse index** | Inverted index: term → node locations for fast lookup |
+| **Conversational chat** | Multi-turn Q&A with cited answers, backed by the reverse index |
 | **Provider-agnostic** | Pass any LLM (OpenAI, Anthropic, Ollama, Gemini…) |
 | **Progress tracking** | Fine-grained per-step callbacks (13 PDF steps, 8 MD steps) |
 | **Fully typed** | 100% TypeScript, `.d.ts` declarations included |
@@ -550,6 +624,83 @@ const llm: LLMProvider = async (prompt) => {
   };
 };
 ```
+
+---
+
+## Conversational Chat Mode
+
+Once you have a `PageIndexResult` and a `ReverseIndex` you can add a full multi-turn chat interface to your app. The pattern is:
+
+```
+User question
+  → searchReverseIndex()     ← retrieves the most relevant tree nodes
+  → build grounded context   ← page text / node summaries (no embeddings)
+  → LLMProvider()            ← any provider, with chat history
+  → cited answer             ← response + source metadata
+```
+
+### Minimal example
+
+```ts
+import {
+  pageIndex,
+  buildReverseIndex,
+  searchReverseIndex,
+} from 'react-native-pageindex';
+
+// 1. Build the forward index (once per document)
+const result = await pageIndex({ pages, llm, docName: 'My Docs' });
+
+// 2. Build the reverse index (once per document)
+const reverseIndex = await buildReverseIndex({ result, pages, options: { mode: 'keyword' } });
+
+// 3. Chat loop
+const history: { role: 'user' | 'assistant'; content: string }[] = [];
+
+async function ask(question: string) {
+  // Retrieve top-5 relevant nodes
+  const hits = searchReverseIndex(reverseIndex, question, 5);
+
+  // Build grounded context
+  const context = hits
+    .map(h => `[${h.nodeTitle}]\n${h.summary ?? ''}`)
+    .join('\n\n---\n\n');
+
+  const userTurn = `Context:\n${context}\n\nQuestion: ${question}`;
+
+  // Call LLM with running history
+  const { content } = await llm(userTurn, { chatHistory: history });
+
+  // Update history for next turn
+  history.push({ role: 'user', content: question });
+  history.push({ role: 'assistant', content });
+
+  return {
+    answer: content,
+    sources: hits.map(h => ({ title: h.nodeTitle, pages: `${h.startIndex}–${h.endIndex}` })),
+  };
+}
+
+// Usage
+const { answer, sources } = await ask('Best season to grow paddy in Odisha?');
+console.log(answer);
+// → "According to the 'Rice (Paddy) Cultivation' section, rice is primarily
+//    a kharif crop … the best season is during the kharif / monsoon period."
+console.log(sources);
+// → [{ title: 'Rice (Paddy) Cultivation', pages: '12–15' }, ...]
+```
+
+### Chat in the browser demo
+
+The demo app's **💬 Chat** tab is a fully-featured implementation built on top of the pattern above:
+
+- **Multi-turn** — up to 10 previous messages are sent as `chatHistory`, preserving conversational context.
+- **Cited answers** — each response includes expandable source cards with node title, node ID, page range and relevance score (0–100).
+- **Grounded context** — actual page text is preferred over summaries; each node's contribution is capped at 1 200 chars to stay within token budgets.
+- **Keyboard shortcuts** — Enter to send, Shift+Enter for a newline.
+- **LLM providers** — OpenAI (via Vite dev-server proxy), Anthropic (direct), or Ollama (local) — configured in the sidebar before building the index.
+
+> **Tip:** For best chat quality, build the index in **Full LLM** mode (not Keyword mode) so each node has a rich LLM-generated summary the chat can draw on when no page text is available.
 
 ---
 

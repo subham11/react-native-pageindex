@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
   pageIndex,
   pageIndexMd,
@@ -10,6 +10,7 @@ import {
   type PageData,
   type ReverseIndex,
   type ProgressInfo,
+  type LLMProvider,
 } from 'react-native-pageindex';
 import { createLLMProvider, type LLMConfig, DEFAULT_MODELS } from './llm';
 import {
@@ -26,7 +27,7 @@ import ResultsPanel from './components/ResultsPanel';
 
 export type BuildMode  = 'keyword' | 'llm';
 export type BuildState = 'idle' | 'building' | 'done' | 'error';
-export type ActiveTab  = 'tree' | 'search' | 'pages';
+export type ActiveTab  = 'tree' | 'search' | 'chat' | 'pages';
 export type DataSource = 'sample_csv' | 'sample_pdf' | 'upload';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -124,6 +125,7 @@ export default function App() {
   const [error, setError]                 = useState<string | null>(null);
   const [activeTab, setActiveTab]         = useState<ActiveTab>('tree');
   const [durationMs, setDurationMs]       = useState(0);
+  const llmRef                            = useRef<LLMProvider | null>(null);
 
   const report = useCallback((info: ProgressInfo) => {
     setCurrentProgress(info);
@@ -260,6 +262,7 @@ export default function App() {
       // ═════════════════════════════════════════════════════════════════════
       } else {
         const llm = createLLMProvider(llmConfig);
+        llmRef.current = llm;
 
         if (resolvedType === 'csv' && textContent) {
           // ── CSV LLM ──────────────────────────────────────────────────────
@@ -431,6 +434,7 @@ export default function App() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               durationMs={durationMs}
+              llm={llmRef.current}
             />
           )}
         </main>

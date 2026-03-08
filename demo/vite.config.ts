@@ -50,6 +50,8 @@ export default defineConfig({
     alias: {
       // Point "react-native-pageindex" at the local TypeScript source
       'react-native-pageindex': path.resolve(__dirname, '../src/index.ts'),
+      // pdfjs-dist v5 dropped the extension-less entry; map to the .mjs file
+      'pdfjs-dist/legacy/build/pdf': path.resolve(__dirname, 'node_modules/pdfjs-dist/legacy/build/pdf.mjs'),
     },
   },
   optimizeDeps: {

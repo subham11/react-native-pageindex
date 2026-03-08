@@ -1,8 +1,9 @@
-import type { PageIndexResult, PageData, ReverseIndex, TreeNode } from 'react-native-pageindex';
+import type { PageIndexResult, PageData, ReverseIndex, TreeNode, LLMProvider } from 'react-native-pageindex';
 import type { BuildMode, ActiveTab } from '../App';
 import TreeView from './TreeView';
 import SearchPanel from './SearchPanel';
 import RawPages from './RawPages';
+import ChatPanel from './ChatPanel';
 
 interface Props {
   result: PageIndexResult;
@@ -12,6 +13,7 @@ interface Props {
   activeTab: ActiveTab;
   setActiveTab: (t: ActiveTab) => void;
   durationMs: number;
+  llm: LLMProvider | null;
 }
 
 // structure is TreeNode[] — count all nodes recursively
@@ -23,7 +25,7 @@ function countNodes(nodeOrList: TreeNode | TreeNode[]): number {
 }
 
 export default function ResultsPanel({
-  result, reverseIndex, pages, mode, activeTab, setActiveTab, durationMs,
+  result, reverseIndex, pages, mode, activeTab, setActiveTab, durationMs, llm,
 }: Props) {
   const nodeCount = countNodes(result.structure);
   const termCount = reverseIndex?.stats.totalTerms ?? 0;
@@ -33,7 +35,8 @@ export default function ResultsPanel({
 
   const tabs = [
     { id: 'tree' as ActiveTab,   label: '🌲 Tree View' },
-    { id: 'search' as ActiveTab, label: '🔍 Search',  disabled: !reverseIndex },
+    { id: 'search' as ActiveTab, label: '🔍 Search',   disabled: !reverseIndex },
+    { id: 'chat' as ActiveTab,   label: '💬 Chat',     disabled: !reverseIndex },
     { id: 'pages' as ActiveTab,  label: '📄 Raw Pages' },
   ];
 
@@ -114,6 +117,15 @@ export default function ResultsPanel({
 
       {activeTab === 'pages' && (
         <RawPages pages={pages} />
+      )}
+
+      {activeTab === 'chat' && reverseIndex && (
+        <ChatPanel
+          reverseIndex={reverseIndex}
+          result={result}
+          pages={pages}
+          llm={llm}
+        />
       )}
     </div>
   );
