@@ -1,6 +1,6 @@
 {
   "name": "react-native-pageindex",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Vectorless, reasoning-based RAG — builds a hierarchical tree index from PDF, DOCX, CSV, XLSX or Markdown using any LLM. React Native compatible.",
   "main": "dist/index.js",
   "module": "dist/index.js",

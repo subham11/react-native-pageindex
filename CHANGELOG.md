@@ -6,6 +6,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and
 
 ---
 
+## [0.1.3] — 2026-03-08
+
+### Added
+- **Chat mode** (`ChatPanel.tsx`) — conversational multi-turn Q&A over any indexed document, with collapsible cited-source cards per reply (node title, node ID, page range, relevance score)
+- `docs/screenshots/demo-chat-mode.png` — screenshot of the Chat tab in action
+
+### Documentation
+- Added `## Conversational Chat Mode` section to README with minimal code example and full description of the browser demo's Chat tab implementation
+- Updated Demo section with Chat mode screenshot and walkthrough (section 8)
+- Updated Features table to include **Conversational chat**
+
+---
+
 ## [0.1.2] — 2026-03-08
 
 ### Documentation
